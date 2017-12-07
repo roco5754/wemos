@@ -1,2 +1,2 @@
-#define WIFI_SSID "..."
-#define WIFI_PASS "..."
+#define WIFI_SSID "KATTOM2"
+#define WIFI_PASS "Clancytom"

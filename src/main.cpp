@@ -37,6 +37,7 @@ void setup() {
 
     // Init serial port and clean garbage
     Serial.begin(SERIAL_BAUDRATE);
+    Serial.println("My Sketch has started");
     Serial.println();
     Serial.println();
 
