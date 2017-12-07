@@ -4,7 +4,7 @@
 #include "credentials.h"
 
 #define SERIAL_BAUDRATE                 115200
-#define LED                             2
+#define LED                             5
 
 fauxmoESP fauxmo;
 
@@ -31,6 +31,18 @@ void wifiSetup() {
     // Connected!
     Serial.printf("[WIFI] STATION Mode, SSID: %s, IP address: %s\n", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
 
+}
+
+unsigned long timeTurnedOn;
+bool currentState = false;
+void setSwitchToState(bool state) {
+  currentState = state;
+  Serial.printf(" state: %s\n", state ? "ON" : "OFF");
+  //Invert the state as all programmer logic assumes state == true is light on, but the relay is inverted
+  digitalWrite(LED, !state);
+  if (state) {
+    timeTurnedOn = millis();
+  }
 }
 
 void setup() {
@@ -61,7 +73,7 @@ void setup() {
     // it's easier to match devices to action without having to compare strings.
     fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state) {
         Serial.printf("[MAIN] Device #%d (%s) state: %s\n", device_id, device_name, state ? "ON" : "OFF");
-        digitalWrite(LED, !state);
+        setSwitchToState(state);
     });
 
     // Callback to retrieve current state (for GetBinaryState queries)
@@ -84,7 +96,13 @@ void loop() {
     static unsigned long last = millis();
     if (millis() - last > 5000) {
         last = millis();
-        Serial.printf("[MAIN] Free heap: %d bytes\n", ESP.getFreeHeap());
+        // Serial.printf("[MAIN] Free heap: %d bytes\n", ESP.getFreeHeap());
+    }
+
+    if (currentState &&
+        millis() - timeTurnedOn > 5000) {
+          //Enforce a timer to turn off the switch after X seconds
+          setSwitchToState(false);
     }
 
 }
